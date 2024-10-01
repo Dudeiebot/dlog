@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"os"
+	"time"
 )
 
 type HandlerOptions struct {
@@ -25,7 +26,8 @@ func NewPrettyHandler(out io.Writer, opts *HandlerOptions) slog.Handler {
 }
 
 func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
-	timeStr := r.Time.Format(h.opts.TimeStr)
+	currTime := time.Unix(0, time.Now().UnixNano())
+	timeStr := currTime.Format(h.opts.TimeStr)
 	level := r.Level.String()
 
 	for len(level) < 5 {
@@ -46,7 +48,7 @@ func NewLog() *slog.Logger {
 		HandlerOptions: slog.HandlerOptions{
 			Level: slog.LevelInfo,
 		},
-		TimeStr: "2006-01-02 15:00:00",
+		TimeStr: "2006-01-02 15:04:05",
 	})
 	logger := slog.New(preHandler)
 	slog.SetDefault(logger)
@@ -54,10 +56,10 @@ func NewLog() *slog.Logger {
 }
 
 // func main() {
-// 	logs := NewLog()
-// 	logs.Info(
-// 		"Starting server on :8080",
-// 		slog.String("port", "8080"),
-// 		slog.String("status", "initializing"),
-// 	)
+// 	logger := NewLog()
+// 	logger.Info("Starting server on :8080", "port", 8080, "status", "initializing")
+//
+// 	// Add a delay to demonstrate time difference
+// 	time.Sleep(2 * time.Second)
+// 	logger.Info("Server is now running", "port", 8080, "status", "running")
 // }
