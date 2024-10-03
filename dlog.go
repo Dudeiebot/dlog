@@ -6,6 +6,8 @@ import (
 	"io"
 	"log/slog"
 	"os"
+
+	"github.com/fatih/color"
 )
 
 const (
@@ -38,6 +40,21 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 	timeStr := r.Time.Format(h.opts.TimeStr)
 
 	level := r.Level.String()
+
+	switch r.Level {
+	case LevelTrace:
+		fallthrough
+	case slog.LevelDebug:
+		level = color.WhiteString(level)
+	case slog.LevelInfo:
+		level = color.BlueString(level)
+	case slog.LevelWarn:
+		level = color.YellowString(level)
+	case slog.LevelError:
+		level = color.RedString(level)
+	case LevelFatal:
+		level = color.MagentaString(level)
+	}
 	// var ok bool
 	// var a slog.Attr
 	//
