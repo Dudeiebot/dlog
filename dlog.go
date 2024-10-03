@@ -6,8 +6,19 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"time"
+
+	"github.com/fatih/color"
 )
+
+const (
+	LevelTrace = slog.LevelDebug - 4
+	LevelFatal = slog.LevelError + 4
+)
+
+var LevelNames = map[slog.Leveler]string{
+	LevelTrace: "TRACE",
+	LevelFatal: "FATAL",
+}
 
 type HandlerOptions struct {
 	slog.HandlerOptions
@@ -26,19 +37,49 @@ func NewPrettyHandler(out io.Writer, opts *HandlerOptions) slog.Handler {
 }
 
 func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
-	currTime := time.Unix(0, time.Now().UnixNano())
-	timeStr := currTime.Format(h.opts.TimeStr)
+	timeStr := r.Time.Format(h.opts.TimeStr)
+
 	level := r.Level.String()
 
-	for len(level) < 5 {
-		level += " "
+	switch r.Level {
+	case LevelTrace:
+		fallthrough
+	case slog.LevelDebug:
+		level = color.WhiteString(level)
+	case slog.LevelInfo:
+		level = color.BlueString(level)
+	case slog.LevelWarn:
+		level = color.YellowString(level)
+	case slog.LevelError:
+		level = color.RedString(level)
+	case LevelFatal:
+		level = color.MagentaString(level)
 	}
-	fmt.Fprintf(h.w, "%s  [%s]  %s", timeStr, level, r.Message)
+	// var ok bool
+	// var a slog.Attr
+	//
+	// level, _ := a.Value.Any().(slog.Level)
+	// levelLabel, ok = LevelNames[level]
+	// if !ok {
+	// 	levelLabel = level.String()
+	// }
 
+	// if levelLabel == "" {
+	// 	levelLabel = "UNKNOWN"
+	// }
+
+	// Format and print the log entry
+	_, err := fmt.Fprintf(h.w, "%s  [%s]  %s", timeStr, level, r.Message)
+	if err != nil {
+		return err
+	}
+
+	// If you want to log attributes, uncomment the following:
 	r.Attrs(func(a slog.Attr) bool {
 		fmt.Fprintf(h.w, " %s=%v", a.Key, a.Value)
 		return true
 	})
+
 	fmt.Fprintln(h.w)
 	return nil
 }
@@ -46,10 +87,22 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 func NewLog() *slog.Logger {
 	preHandler := NewPrettyHandler(os.Stdout, &HandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
-			Level: slog.LevelInfo,
+			Level: LevelTrace,
+			ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+				if a.Key == slog.LevelKey {
+					level := a.Value.Any().(slog.Level)
+					levelLabel, exists := LevelNames[level]
+					if !exists {
+						levelLabel = level.String()
+					}
+					a.Value = slog.StringValue(levelLabel)
+				}
+				return a
+			},
 		},
 		TimeStr: "2006-01-02 15:04:05",
 	})
+
 	logger := slog.New(preHandler)
 	slog.SetDefault(logger)
 	return logger
@@ -62,4 +115,11 @@ func NewLog() *slog.Logger {
 // 	// Add a delay to demonstrate time difference
 // 	time.Sleep(2 * time.Second)
 // 	logger.Info("Server is now running", "port", 8080, "status", "running")
+//
+// 	logger.Info("This is an info message")
+// 	logger.Warn("This is a warning message")
+// 	logger.Error("This is an error message")
+// 	ctx := context.Background()
+// 	logger.Log(ctx, LevelTrace, "This is a trace message") // This should be logged
+// 	logger.Log(ctx, LevelFatal, "This is a fatal message") // This should be logged
 // }
