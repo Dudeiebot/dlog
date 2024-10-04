@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 )
@@ -68,7 +69,6 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 		}
 		return true
 	})
-
 
 	_, err := fmt.Fprintln(h.w, str.String())
 	return err
