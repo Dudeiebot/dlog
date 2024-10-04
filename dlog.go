@@ -72,6 +72,7 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 	return err
 }
 
+// called with dlog.NewLog() and then you vibe on
 func NewLog() *slog.Logger {
 	preHandler := NewPrettyHandler(os.Stdout, &HandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
