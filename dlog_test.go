@@ -36,7 +36,7 @@ func TestPrettyHandlerHandle(t *testing.T) {
 
 	// Adjust the expected output to include the key=value
 	expected := fmt.Sprintf(
-		"2023-05-15 10:30:00 %s Test key=value\n",
+		"2023-05-15 10:30:00 %s Test key = value\n",
 		color.MagentaString("FATAL"),
 	)
 	if buf.String() != expected {
