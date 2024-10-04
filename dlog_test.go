@@ -15,7 +15,7 @@ func TestPrettyHandlerHandle(t *testing.T) {
 	buf := new(bytes.Buffer)
 	opts := &HandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
-			Level: LevelFatal,
+			Level: slog.LevelInfo,
 		},
 		TimeStr: "2006-01-02 15:04:05",
 	}
@@ -24,7 +24,7 @@ func TestPrettyHandlerHandle(t *testing.T) {
 	testTime := time.Date(2023, 5, 15, 10, 30, 0, 0, time.UTC)
 	record := slog.Record{
 		Time:    testTime,
-		Level:   LevelFatal,
+		Level:   slog.LevelInfo,
 		Message: "Test",
 	}
 	record.AddAttrs(slog.String("key", "value"))
@@ -39,7 +39,6 @@ func TestPrettyHandlerHandle(t *testing.T) {
 		"2023-05-15 10:30:00 %s Test key=value\n",
 		color.MagentaString("FATAL"),
 	)
-
 	if buf.String() != expected {
 		t.Errorf("Output doesn't match expected.\nGot: %s\nWant: %s", buf.String(), expected)
 	}

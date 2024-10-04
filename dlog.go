@@ -33,8 +33,8 @@ func NewPrettyHandler(out io.Writer, opts *HandlerOptions) slog.Handler {
 }
 
 func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
-	timeStr := r.Time.Format(h.opts.TimeStr)
-
+	currTime := time.Unix(0, time.Now().UnixNano())
+	timeStr := currTime.Format(h.opts.TimeStr)
 	level := r.Level.String()
 
 	switch r.Level {
@@ -69,6 +69,7 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 		return true
 	})
 
+
 	_, err := fmt.Fprintln(h.w, str.String())
 	return err
 }
@@ -80,7 +81,6 @@ func NewLog() *slog.Logger {
 		},
 		TimeStr: "2006-01-02 15:04:05",
 	})
-
 	logger := slog.New(preHandler)
 	slog.SetDefault(logger)
 	return logger
@@ -93,7 +93,6 @@ func NewLog() *slog.Logger {
 // 	// Add a delay to demonstrate time difference
 // 	time.Sleep(2 * time.Second)
 // 	logger.Info("Server is now running", "port", 8080, "status", "running")
-//
 // 	logger.Info("This is an info message")
 // 	logger.Warn("This is a warning message")
 // 	logger.Error("This is an error message")
@@ -101,4 +100,5 @@ func NewLog() *slog.Logger {
 // 	ctx := context.Background()
 // 	logger.Log(ctx, LevelTrace, "This is a trace message") // This should be logged
 // 	logger.Log(ctx, LevelFatal, "This is a fatal message") // This should be logged
+
 // }
