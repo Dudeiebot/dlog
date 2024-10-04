@@ -3,9 +3,12 @@ package dlog
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"log/slog"
 	"testing"
 	"time"
+
+	"github.com/fatih/color"
 )
 
 func TestPrettyHandlerHandle(t *testing.T) {
@@ -32,9 +35,12 @@ func TestPrettyHandlerHandle(t *testing.T) {
 	}
 
 	// Adjust the expected output to include the key=value
-	expected := "2023-05-15 10:30:00  [FATAL]  Test key=value\n"
+	expected := fmt.Sprintf(
+		"2023-05-15 10:30:00 %s Test key=value\n",
+		color.MagentaString("FATAL"),
+	)
 
 	if buf.String() != expected {
-		t.Errorf("Output doesn't match expected.\nGot:  %s\nWant: %s", buf.String(), expected)
+		t.Errorf("Output doesn't match expected.\nGot: %s\nWant: %s", buf.String(), expected)
 	}
 }
