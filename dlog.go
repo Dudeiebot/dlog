@@ -6,7 +6,14 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"time"
+	"strings"
+
+	"github.com/fatih/color"
+)
+
+const (
+	LevelTrace = slog.LevelDebug - 4
+	LevelFatal = slog.LevelError + 4
 )
 
 type HandlerOptions struct {
@@ -30,23 +37,47 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 	timeStr := currTime.Format(h.opts.TimeStr)
 	level := r.Level.String()
 
-	for len(level) < 5 {
-		level += " "
+	switch r.Level {
+	case LevelTrace:
+		level = color.CyanString("TRACE")
+	case slog.LevelDebug:
+		level = color.WhiteString(level)
+	case slog.LevelInfo:
+		level = color.BlueString(level)
+	case slog.LevelWarn:
+		level = color.YellowString(level)
+	case slog.LevelError:
+		level = color.RedString(level)
+	case LevelFatal:
+		level = color.MagentaString("FATAL")
 	}
-	fmt.Fprintf(h.w, "%s  [%s]  %s", timeStr, level, r.Message)
+
+	var str strings.Builder
+	str.WriteString(timeStr)
+	str.WriteByte(' ')
+	str.WriteString(level)
+	str.WriteByte(' ')
+	str.WriteString(r.Message)
 
 	r.Attrs(func(a slog.Attr) bool {
-		fmt.Fprintf(h.w, " %s=%v", a.Key, a.Value)
+		if a.Key != slog.LevelKey {
+			str.WriteByte(' ')
+			str.WriteString(a.Key)
+			str.WriteByte('=')
+			str.WriteString(fmt.Sprint(a.Value))
+		}
 		return true
 	})
-	fmt.Fprintln(h.w)
-	return nil
+
+
+	_, err := fmt.Fprintln(h.w, str.String())
+	return err
 }
 
 func NewLog() *slog.Logger {
 	preHandler := NewPrettyHandler(os.Stdout, &HandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
-			Level: slog.LevelInfo,
+			Level: LevelTrace,
 		},
 		TimeStr: "2006-01-02 15:04:05",
 	})
@@ -62,4 +93,12 @@ func NewLog() *slog.Logger {
 // 	// Add a delay to demonstrate time difference
 // 	time.Sleep(2 * time.Second)
 // 	logger.Info("Server is now running", "port", 8080, "status", "running")
+// 	logger.Info("This is an info message")
+// 	logger.Warn("This is a warning message")
+// 	logger.Error("This is an error message")
+// 	logger.Debug("This is a Debug message")
+// 	ctx := context.Background()
+// 	logger.Log(ctx, LevelTrace, "This is a trace message") // This should be logged
+// 	logger.Log(ctx, LevelFatal, "This is a fatal message") // This should be logged
+
 // }
