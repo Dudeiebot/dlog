@@ -73,10 +73,10 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 }
 
 // called with dlog.NewLog() and then you vibe on
-func NewLog() *slog.Logger {
+func NewLog(l slog.Level) *slog.Logger {
 	preHandler := NewPrettyHandler(os.Stdout, &HandlerOptions{
 		HandlerOptions: slog.HandlerOptions{
-			Level: LevelTrace,
+			Level: l,
 		},
 		TimeStr: "2006-01-02 15:04:05",
 	})
