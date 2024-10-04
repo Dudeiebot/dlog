@@ -33,8 +33,7 @@ func NewPrettyHandler(out io.Writer, opts *HandlerOptions) slog.Handler {
 }
 
 func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
-	currTime := time.Unix(0, time.Now().UnixNano())
-	timeStr := currTime.Format(h.opts.TimeStr)
+	timeStr := r.Time.Format(h.opts.TimeStr)
 	level := r.Level.String()
 
 	switch r.Level {
@@ -68,7 +67,6 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 		}
 		return true
 	})
-
 
 	_, err := fmt.Fprintln(h.w, str.String())
 	return err
