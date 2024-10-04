@@ -62,7 +62,7 @@ func (h *prettyHandler) Handle(ctx context.Context, r slog.Record) error {
 		if a.Key != slog.LevelKey {
 			str.WriteByte(' ')
 			str.WriteString(a.Key)
-			str.WriteByte('=')
+			str.WriteString(" = ")
 			str.WriteString(fmt.Sprint(a.Value))
 		}
 		return true
